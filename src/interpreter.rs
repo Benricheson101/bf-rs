@@ -14,6 +14,7 @@ enum BFOperations {
     StartLoop,
     EndLoop,
 
+    PushCellToDebug,
     Other,
 }
 
@@ -22,6 +23,7 @@ pub struct BF {
     instructions: Vec<BFOperations>,
     pos: usize,
     cell: usize,
+    pub debug: Vec<char>,
 }
 
 impl BF {
@@ -31,6 +33,7 @@ impl BF {
             instructions: code.chars().map(Self::map_chars).collect(),
             pos: 0,
             cell: 0,
+            debug: Vec::new(),
         }
     }
 
@@ -48,6 +51,7 @@ impl BF {
             '[' => BFOperations::StartLoop,
             ']' => BFOperations::EndLoop,
 
+            '?' => BFOperations::PushCellToDebug,
             _ => BFOperations::Other,
         }
     }
@@ -101,6 +105,8 @@ impl BF {
                         let bytes = input.bytes().nth(0).expect("no byte read") as char;
                         self.tape[self.cell] = bytes;
                     },
+
+                    BFOperations::PushCellToDebug => self.debug.push(self.tape[self.cell]),
                     _ => {
                         self.pos += 1;
                         continue;
@@ -116,5 +122,23 @@ impl BF {
 
     pub fn run(&mut self) {
         self.exec(false);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::interpreter::BF;
+    #[test]
+    fn hello_world() {
+        let mut b = BF::new(
+            String::from("++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>?>---?+++++++??+++?>>?<-?<?+++?------?--------?>>+?")
+        );
+
+        b.run();
+
+        assert_eq!(
+            b.debug,
+            vec!['H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', '!']
+        );
     }
 }

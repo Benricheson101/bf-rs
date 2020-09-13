@@ -1,5 +1,5 @@
 mod interpreter;
-
+use interpreter::BF;
 use std::{env, fs};
 
 fn main() {
@@ -9,5 +9,5 @@ fn main() {
 
     let contents = fs::read_to_string(path).expect("Error opening file");
 
-    interpreter::BF::new(contents).run();
+    BF::new(contents).run();
 }
