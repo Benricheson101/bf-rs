@@ -21,7 +21,7 @@ enum BFOperations {
 pub struct BF {
     tape: Vec<char>,
     instructions: Vec<BFOperations>,
-    pos: usize,
+    ptr: usize,
     cell: usize,
     pub debug: Vec<char>,
 }
@@ -30,14 +30,14 @@ impl BF {
     pub fn new(code: String) -> Self {
         Self {
             tape: Vec::new(),
-            instructions: code.chars().map(Self::map_chars).collect(),
-            pos: 0,
+            instructions: code.chars().map(Self::lex).collect(),
+            ptr: 0,
             cell: 0,
             debug: Vec::new(),
         }
     }
 
-    fn map_chars(c: char) -> BFOperations {
+    fn lex(c: char) -> BFOperations {
         match c {
             '>' => BFOperations::IncreasePointer,
             '<' => BFOperations::DecreasePointer,
@@ -57,22 +57,22 @@ impl BF {
     }
 
     fn exec(&mut self, skip: bool) -> bool {
-        while self.pos < self.instructions.len() {
+        while self.ptr < self.instructions.len() {
             if self.cell >= self.tape.len() {
                 self.tape.push('\0');
             }
 
-            if self.instructions[self.pos] == BFOperations::StartLoop {
-                self.pos += 1;
-                let old = self.pos;
+            if self.instructions[self.ptr] == BFOperations::StartLoop {
+                self.ptr += 1;
+                let old = self.ptr;
 
                 while self.exec(self.tape[self.cell] == '\0') == true {
-                    self.pos = old;
+                    self.ptr = old;
                 }
-            } else if self.instructions[self.pos] == BFOperations::EndLoop {
+            } else if self.instructions[self.ptr] == BFOperations::EndLoop {
                 return self.tape[self.cell] != '\0';
             } else if skip == false {
-                match self.instructions[self.pos] {
+                match self.instructions[self.ptr] {
                     BFOperations::IncreasePointer => self.cell += 1,
                     BFOperations::DecreasePointer => self.cell -= 1,
 
@@ -108,13 +108,13 @@ impl BF {
 
                     BFOperations::PushCellToDebug => self.debug.push(self.tape[self.cell]),
                     _ => {
-                        self.pos += 1;
+                        self.ptr += 1;
                         continue;
                     },
 
                 };
             };
-            self.pos += 1;
+            self.ptr += 1;
         };
 
         return false;
